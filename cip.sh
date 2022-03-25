@@ -18,7 +18,7 @@ if [ -z $go ]; then
     now=$(date '+%FT%T.%3NZ')
     lastweek=$(date --date='-1 week' '+%FT%T.%3NZ')
 
-    echo "Pesquisar padrão, última semana?"
+    echo "Pesquisar período padrão, última semana?"
     select sn in "Sim" "Não"; do
         case $sn in
             Sim ) padrao=true; break;;
@@ -37,19 +37,19 @@ Pesquisar por qual período?
 1) 3 últimos meses
 2) 6 últimos meses
 3) 12 últimos meses (1 ano)
-4) 18 últimos meses (1 ano e meio)
-5) 24 últimos meses (2 anos)
-6) Personalizar pesquisa
 EOF
+#4) 18 últimos meses (1 ano e meio)
+#5) 24 últimos meses (2 anos)
+#6) Personalizar pesquisa
         printf "\nInforme a opção desejada: "
         IFS= read -r periodo
         case $periodo in
             1 ) start=$(date --date='-3 months' '+%FT%T.%3NZ'); end=$now;;
             2 ) start=$(date --date='-6 months' '+%FT%T.%3NZ'); end=$now;;
             3 ) start=$(date --date='-12 months' '+%FT%T.%3NZ'); end=$now;;
-            4 ) start=$(date --date='-18 months' '+%FT%T.%3NZ'); end=$now;;
-            5 ) start=$(date --date='-24 months' '+%FT%T.%3NZ'); end=$now;;
-            6 ) echo "a ser implementado...";;
+            # 4 ) start=$(date --date='-18 months' '+%FT%T.%3NZ'); end=$now;;
+            # 5 ) start=$(date --date='-24 months' '+%FT%T.%3NZ'); end=$now;;
+            # 6 ) echo "a ser implementado...";;
         esac
     fi
 
@@ -63,17 +63,36 @@ EOF
         esac
     done
 
-    if [ "$completa" == true ]; then
-        opcoesSistemas="SITRAF SLC SILOC SCC CTC C3%20REGISTRADORA PCR CHEQUE%20LEGAL PCPS STD MCB PCPO CIP SRCC SECHUB"
-        opcoesLista="Monitoramento QA SAP SistemasIMF TI AssessoriaExecutiva Compliance Comunicacao DadosEstrategicos Financeiro Juridico Negocios ProdutosIMF"
-    else
-        echo "a ser implementado..."
+    opcoesSistemas="SITRAF SLC SILOC SCC CTC C3%20REGISTRADORA PCR CHEQUE%20LEGAL PCPS STD MCB PCPO CIP SRCC SECHUB"
+    opcoesLista="Monitoramento QA SAP SistemasIMF TI AssessoriaExecutiva Compliance Comunicacao DadosEstrategicos Financeiro Juridico Negocios ProdutosIMF"
+    if [ ! "$completa" == true ]; then
+        printf '\nOpções disponíveis de listas: %s' "$opcoesLista"
+        printf '\nInforme as listas a serem pesquisadas, separando por espaço: '
+        read -r opcoesLista
+        printf '\nOpções disponíveis de sistemas: %s' "$opcoesSistemas"
+        printf '\nInforme os sistemas a serem pesquisados, separando por espaço: '
+        read -r opcoesSistemas
+        
     fi
 
+    echo ""
+    countLista=$(wc -w <<< "$opcoesLista")
+    countSistemas=$(wc -w <<< "$opcoesSistemas")
+    (( total="$countLista"*"$countSistemas" ))
+
+    iSistemaLista=1
+    count=0
     for sistema in $opcoesSistemas; do
         for lista in $opcoesLista ; do
-            echo "Verificando sistema $sistema, lista $lista"
-
+            perc="$(printf "%.2f%%\n" "$(echo "scale=5;$iSistemaLista/$total*100" | bc)")"
+            # echo "Verificando sistema $sistema, lista $lista"
+            (( spc=3-"$count" ))
+            v=$(printf "%-${count}s" ".")
+            s=$(printf "%-${spc}s" " ")
+            echo -ne "Efetuando consulta${v// /.}${s// / }\t$perc\r"
+            sleep 1
+            if [ "$count" -eq 3 ]; then count=0; fi
+            (( count+=1 ))
 
             filter="OData__ModerationStatus eq 0"
             filter+=" and (LocalPublicacao eq 'WebSite' or LocalPublicacao eq 'Ambos')"
@@ -116,15 +135,16 @@ EOF
             echo "$json" | jq | sed -n -r 's#(\s+)?"FileRef": "(.+Atualização( dos?)? Certificados?.+\.pdf)",?#\2#p' \
             | cat >> arquivos.txt
             #| tee -a arquivos.txt
+            (( iSistemaLista+=1 ))
         done
     done
 
     cat << EOF
-===========
+===============================
 
 Consultas finalizadas, listando URLs para download.
 
-===========
+===============================
 EOF
     if [ -s arquivos.txt ]; then
         while read -u 9 -r line; do
