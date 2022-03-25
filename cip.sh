@@ -81,7 +81,7 @@ EOF
     (( total="$countLista"*"$countSistemas" ))
 
     iSistemaLista=1
-    count=0
+    count=1
     for sistema in $opcoesSistemas; do
         for lista in $opcoesLista ; do
             perc="$(printf %.2f%%"\n" "$((10**3 * 100 * "$iSistemaLista" / "$total"))e-3" | tr '.' ',')"
