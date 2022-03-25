@@ -84,7 +84,7 @@ EOF
     count=0
     for sistema in $opcoesSistemas; do
         for lista in $opcoesLista ; do
-            perc="$(printf "%.2f%%\n" "$(echo "scale=5;$iSistemaLista/$total*100" | bc)")"
+            perc="$(printf %.2f%%"\n" "$((10**3 * 100 * "$iSistemaLista" / "$total"))e-3" | tr '.' ',')"
             # echo "Verificando sistema $sistema, lista $lista"
             (( spc=3-"$count" ))
             v=$(printf "%-${count}s" ".")
