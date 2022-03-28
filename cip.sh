@@ -155,5 +155,5 @@ EOF
     else
         printf "\n\tNão foram encontrados arquivos de atualização de certificado no período, lista(s) e/ou sistema(s) selecionado(s).\n\n"
     fi
-    rm -rf arquivos.txt sistemas.txt 2>/dev/null
+    rm -rf sistemas.txt 2>/dev/null
 fi
