@@ -87,23 +87,26 @@ for porta in portas:
                 conn.clean()
                 conn.close()
                 print("Porta {} aberta.\n\tBanner recebido: {}".format(porta, banner))
-                nm = nmap.PortScanner()
-                result = nm.scan(ip,str(porta),arguments='-sV -sC')
-                name = result['scan'][ip]['tcp'][porta]['name']
-                product = result['scan'][ip]['tcp'][porta]['product']
-                version = result['scan'][ip]['tcp'][porta]['version']
-                print("Porta",porta,"aberta. >",name,"< Produto:",product,"- Versão:",version)
-                l = open(file_log, "a")
-                l.write("{}\r\n".format((nm.csv()).split('\r\n')[1]))
-                l.close()
-                j = open(file_xml, "a")
-                j.write("{}\r\n".format(result))
-                j.close()
+                try:
+                    nm = nmap.PortScanner()
+                    result = nm.scan(ip,str(porta),arguments='-sV -sC')
+                    name = result['scan'][ip]['tcp'][porta]['name']
+                    product = result['scan'][ip]['tcp'][porta]['product']
+                    version = result['scan'][ip]['tcp'][porta]['version']
+                    print("Porta",porta,"aberta. >",name,"< Produto:",product,"- Versão:",version)
+                    l = open(file_log, "a")
+                    l.write("{}\r\n".format((nm.csv()).split('\r\n')[1]))
+                    l.close()
+                    j = open(file_xml, "a")
+                    j.write("{}\r\n".format(result))
+                    j.close()
+                except:
+                    print("Nmap error.")
             except KeyboardInterrupt:
                 print("Exit...")
                 sys.exit()
             except:
-                print("Nmap error.")
+                print("Connection error.")
             finally:
                 useSocket.close()
         else:
