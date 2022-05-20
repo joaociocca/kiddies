@@ -27,5 +27,3 @@ for server in ns_answer:
         except Exception as e:
             print("[*] Found NS {}, but it refused zone transfer!".format(server))
             continue
-
-aws_secret_key
